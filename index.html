@@ -46,7 +46,7 @@ label.t{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px}
 <label class="t">السرعة: <select id="spd" style="font:inherit;padding:4px"><option value="1">عادي</option><option value="0.55">سريع</option><option value="1.6">بطيء ومشوّق</option></select></label>
 </div>
 <div class="card"><b>شكل العجلة</b><div class="scroll" id="thm" style="margin-top:8px"></div></div>
-<div class="card"><div class="row"><input id="ni" placeholder="ضيف اختيار (مثلاً: كشري)" maxlength="24"><button class="b" onclick="addO()">أضف</button></div>
+<div class="card"><div class="row"><input id="ni" placeholder="ضيف اختيار (للأكبر حظًا اكتب: كشري x3)" maxlength="26"><button class="b" onclick="addO()">أضف</button></div>
 <div class="opts" id="ol"></div><div class="mut" style="margin-top:8px" id="hint"></div></div>
 <div class="card"><b>👥 قسّم فرق</b><div class="mut" style="margin:4px 0 8px">بيقسم الاختيارات اللي فوق (الأسماء) على فرق بالعشوائي.</div><div class="row"><select id="tn" style="font:inherit;padding:10px;border:1.5px solid #fed7aa;border-radius:10px"><option>2</option><option>3</option><option>4</option><option>5</option></select><button class="b" onclick="teams()">قسّم</button><button class="b wa" onclick="shareT()">ابعت 💬</button></div><div id="tm" style="margin-top:10px"></div></div>
 <div class="card"><b>آخر النتايج</b><div class="hist" id="hist"><span class="mut">لسه ما دورتش</span></div></div>
@@ -69,6 +69,8 @@ let O=[],ang=0,spinning=false,H=[],cur='';
 const names=Object.keys(PRE);
 $('pr').innerHTML=names.map(n=>`<button class="pc" onclick="loadP('${n}')">${n}</button>`).join('');
 $('thm').innerHTML=Object.keys(THEMES).map(n=>`<button class="pc" onclick="setTh('${n}')">${n}</button>`).join('');
+const nm=o=>o.replace(/\s*[x×*]\s*\d{1,2}$/i,'').trim()||o,wt=o=>{const m=o.match(/[x×*]\s*(\d{1,2})$/i);return m?Math.max(1,+m[1]):1};
+function cum(){const T=O.reduce((a,o)=>a+wt(o),0);let c=[0],s=0;for(const o of O){s+=wt(o);c.push(2*Math.PI*s/T)}return c}
 function setTh(n){COL=THEMES[n];document.querySelectorAll('#thm .pc').forEach(b=>b.classList.toggle('on',b.textContent===n));try{localStorage.setItem('dwt',n)}catch(e){}upd()}
 function loadP(n){cur=n;O=PRE[n].slice();if(!O.length){O=['أنا','إنت','هو','هي']}
  document.querySelectorAll('#pr .pc').forEach(b=>b.classList.toggle('on',b.textContent===n));$('res').textContent='';upd()}
@@ -80,24 +82,24 @@ function upd(){$('ol').innerHTML=O.map((o,i)=>`<span class="op"><i class="sw" st
  $('hint').textContent=O.length<2?'ضيف اختيارين على الأقل':O.length+' اختيار';draw();try{localStorage.setItem('dw',JSON.stringify({O,cur}))}catch(e){}}
 function draw(){const c=$('w'),g=c.getContext('2d'),R=440,n=O.length;g.clearRect(0,0,880,880);g.save();g.translate(R,R);g.rotate(ang);
  if(!n){g.fillStyle='#e7e5e4';g.beginPath();g.arc(0,0,R-4,0,7);g.fill()}
- for(let i=0;i<n;i++){const a0=i*2*Math.PI/n,a1=(i+1)*2*Math.PI/n;g.fillStyle=COL[i%COL.length];g.beginPath();g.moveTo(0,0);g.arc(0,0,R-4,a0,a1);g.closePath();g.fill();g.strokeStyle='#fff';g.lineWidth=4;g.stroke();
-  g.save();const mid=(a0+a1)/2;g.rotate(mid);const fl=Math.cos(mid+ang)<0;if(fl)g.rotate(Math.PI);g.fillStyle='#fff';g.textAlign=fl?'left':'right';g.direction='rtl';const fs=n>14?30:n>8?38:46;g.font='bold '+fs+'px sans-serif';g.shadowColor='#0005';g.shadowBlur=4;let t=O[i];while(g.measureText(t).width>R-140&&t.length>3)t=t.slice(0,-2);if(t!==O[i])t+='…';g.fillText(t,fl?-(R-30):R-30,fs/3);g.restore()}
+ const CU=cum();for(let i=0;i<n;i++){const a0=CU[i],a1=CU[i+1];g.fillStyle=COL[i%COL.length];g.beginPath();g.moveTo(0,0);g.arc(0,0,R-4,a0,a1);g.closePath();g.fill();g.strokeStyle='#fff';g.lineWidth=4;g.stroke();
+  g.save();const mid=(a0+a1)/2;g.rotate(mid);const fl=Math.cos(mid+ang)<0;if(fl)g.rotate(Math.PI);g.fillStyle='#fff';g.textAlign=fl?'left':'right';g.direction='rtl';const fs=n>14?30:n>8?38:46;g.font='bold '+fs+'px sans-serif';g.shadowColor='#0005';g.shadowBlur=4;let t=nm(O[i]);while(g.measureText(t).width>R-140&&t.length>3)t=t.slice(0,-2);if(t!==nm(O[i]))t+='…';g.fillText(t,fl?-(R-30):R-30,fs/3);g.restore()}
  g.restore();g.strokeStyle='#fff';g.lineWidth=14;g.beginPath();g.arc(R,R,R-4,0,7);g.stroke()}
 let ac;function tick(f=900,d=.04,v=.05){if(!$('snd').checked)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),gn=ac.createGain();o.frequency.value=f;o.type='square';gn.gain.value=v;o.connect(gn);gn.connect(ac.destination);o.start();gn.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
 function spin(){if(spinning||O.length<2)return;spinning=true;$('res').textContent='...';
- const n=O.length,seg=2*Math.PI/n,win=Math.floor(Math.random()*n);
+ const n=O.length,CU=cum(),r=Math.random()*CU[n];let win=0;while(win<n-1&&CU[win+1]<=r)win++;
  // pointer at top (angle -PI/2). segment center must land there
- const target=-Math.PI/2-(win+.5)*seg+(Math.random()-.5)*seg*.7;
+ const target=-Math.PI/2-(CU[win]+CU[win+1])/2+(Math.random()-.5)*(CU[win+1]-CU[win])*.7;
  let base=ang-(ang%(2*Math.PI));let end=base+2*Math.PI*(5+Math.floor(Math.random()*3))+((target%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
  if(end<ang+2*Math.PI*4)end+=2*Math.PI*2;
  const start=ang,dur=(4600+Math.random()*1200)*(+$('spd').value||1),t0=performance.now();let lastSeg=-1;
  function f(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,4);ang=start+(end-start)*e;draw();
-  const idx=Math.floor((((-Math.PI/2-ang)%(2*Math.PI))+2*Math.PI)%(2*Math.PI)/seg);if(idx!==lastSeg){lastSeg=idx;tick(700+Math.random()*300)}
+  const aa2=(((-Math.PI/2-ang)%(2*Math.PI))+2*Math.PI)%(2*Math.PI);let idx=0;while(idx<n-1&&CU[idx+1]<=aa2)idx++;if(idx!==lastSeg){lastSeg=idx;tick(700+Math.random()*300)}
   if(p<1)requestAnimationFrame(f);else done()}
  requestAnimationFrame(f)}
 $('w').addEventListener('click',spin);
 function big(w){const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:10;background:#000a;display:flex;align-items:center;justify-content:center;animation:pop .35s';d.innerHTML='<div style="background:#fff;border-radius:24px;padding:28px 34px;text-align:center;max-width:88vw"><div style="font-size:18px;color:#78716c">العجلة حسمت</div><div style="font-size:44px;font-weight:900;color:#be123c;margin:10px 0;word-break:break-word">'+esc(w)+'</div><button class="b" style="font-size:18px">تمام 👌</button></div>';d.onclick=()=>d.remove();document.body.appendChild(d);setTimeout(()=>d.remove(),4500);try{navigator.vibrate&&navigator.vibrate([60,40,120])}catch(e){}}
-function done(){spinning=false;const n=O.length,seg=2*Math.PI/n;const idx=Math.floor((((-Math.PI/2-ang)%(2*Math.PI))+2*Math.PI)%(2*Math.PI)/seg)%n;const w=O[idx];
+function done(){spinning=false;const n=O.length,CU=cum();const aa=(((-Math.PI/2-ang)%(2*Math.PI))+2*Math.PI)%(2*Math.PI);let idx=0;while(idx<n-1&&CU[idx+1]<=aa)idx++;const w=nm(O[idx]);
  $('res').textContent='🎉 '+w;H.unshift(w);H=H.slice(0,8);$('hist').innerHTML=H.map(x=>esc(x)).join(' ← ');tick(1200,.25,.08);setTimeout(()=>tick(1600,.3,.08),160);confetti();big(w);
  if($('elim').checked&&O.length>2){setTimeout(()=>{O.splice(idx,1);upd()},900)}}
 function confetti(){const c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9;width:100%;height:100%';c.width=innerWidth;c.height=innerHeight;document.body.appendChild(c);const g=c.getContext('2d');const P=[];for(let i=0;i<120;i++)P.push({x:innerWidth/2,y:innerHeight/2,vx:(Math.random()-.5)*16,vy:-Math.random()*16-4,c:COL[i%10],r:Math.random()*6,s:4+Math.random()*6});let t=0;(function f(){g.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.45;p.r+=.2;g.save();g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);g.restore()});if(++t<100)requestAnimationFrame(f);else c.remove()})()}
