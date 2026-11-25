@@ -42,6 +42,7 @@ label.t{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px}
 <div class="acts"><button class="b wa" onclick="shareRes()">ابعت النتيجة 💬</button><button class="b g" onclick="shareWheel()">ابعت العجلة 🎡</button></div>
 <label class="t"><input type="checkbox" id="elim"> وضع الإقصاء: اللي يطلع يتشال من العجلة (لتوزيع الأدوار)</label>
 <label class="t"><input type="checkbox" id="snd" checked> صوت</label>
+<label class="t">السرعة: <select id="spd" style="font:inherit;padding:4px"><option value="1">عادي</option><option value="0.55">سريع</option><option value="1.6">بطيء ومشوّق</option></select></label>
 </div>
 <div class="card"><b>شكل العجلة</b><div class="scroll" id="thm" style="margin-top:8px"></div></div>
 <div class="card"><div class="row"><input id="ni" placeholder="ضيف اختيار (مثلاً: كشري)" maxlength="24"><button class="b" onclick="addO()">أضف</button></div>
@@ -59,7 +60,8 @@ const PRE={
 '🎯 حقيقة ولا جرأة':['حقيقة','جرأة','حقيقة','جرأة','اسأل أي حد','تخطّى'],
 '☕ نشرب إيه':['شاي','قهوة تركي','نسكافيه','عصير مانجا','سحلب','ينسون'],
 '🎲 نلعب إيه':['كوتشينة','دومينو','طاولة','بلايستيشن','تخمين','ورقة وقلم'],
-'🧹 مين يعمل المهمة':['غسيل الأطباق','رمي الزبالة','ترتيب الأوضة','شراء الطلبات']};
+'🧹 مين يعمل المهمة':['غسيل الأطباق','رمي الزبالة','ترتيب الأوضة','شراء الطلبات'],
+'🪙 صورة ولا كتابة':['صورة','كتابة'],'🔢 رقم من ١ لـ ١٠':['1','2','3','4','5','6','7','8','9','10'],'✈️ نسافر فين':['الإسكندرية','شرم الشيخ','الغردقة','دهب','مرسى مطروح','الساحل','أسوان','الأقصر'],'🎁 هدية':['عطر','ساعة','سماعات','كتاب','شنطة','كوبون','وردة'],'💬 نبعت لمين':['ماما','بابا','أخويا','صاحبي','زميلي','حد جديد']};
 const THEMES={'🔥 دافي':['#f97316','#ef4444','#eab308','#22c55e','#06b6d4','#6366f1','#d946ef','#ec4899','#14b8a6','#84cc16'],'🌊 بحر':['#0ea5e9','#0369a1','#14b8a6','#0f766e','#38bdf8','#1d4ed8','#06b6d4','#0891b2','#2563eb','#115e59'],'🌸 باستيل':['#f472b6','#c084fc','#818cf8','#38bdf8','#34d399','#fbbf24','#fb7185','#a78bfa','#2dd4bf','#f59e0b'],'🌙 ليلي':['#1e293b','#7c3aed','#0f766e','#be123c','#b45309','#1d4ed8','#475569','#9333ea','#047857','#c2410c']};
 let COL=THEMES['🔥 دافي'];
 let O=[],ang=0,spinning=false,H=[],cur='';
@@ -87,7 +89,7 @@ function spin(){if(spinning||O.length<2)return;spinning=true;$('res').textConten
  const target=-Math.PI/2-(win+.5)*seg+(Math.random()-.5)*seg*.7;
  let base=ang-(ang%(2*Math.PI));let end=base+2*Math.PI*(5+Math.floor(Math.random()*3))+((target%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
  if(end<ang+2*Math.PI*4)end+=2*Math.PI*2;
- const start=ang,dur=4600+Math.random()*1200,t0=performance.now();let lastSeg=-1;
+ const start=ang,dur=(4600+Math.random()*1200)*(+$('spd').value||1),t0=performance.now();let lastSeg=-1;
  function f(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,4);ang=start+(end-start)*e;draw();
   const idx=Math.floor((((-Math.PI/2-ang)%(2*Math.PI))+2*Math.PI)%(2*Math.PI)/seg);if(idx!==lastSeg){lastSeg=idx;tick(700+Math.random()*300)}
   if(p<1)requestAnimationFrame(f);else done()}
