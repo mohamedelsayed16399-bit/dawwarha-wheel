@@ -32,7 +32,7 @@ button.g{background:#ffedd5;color:var(--ink)}button.wa{background:#16a34a}
 label.t{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px}
 .hist{font-size:14px;line-height:1.9}
 .acts{display:flex;gap:8px;margin-top:10px}.acts button{flex:1}
-</style></head><body>
+@keyframes pop{from{opacity:0;transform:scale(.85)}}</style></head><body>
 <header><h1>🎡 دوّرها</h1><p>ناكل فين؟ نتفرج على إيه؟ مين يدفع؟ العجلة تحسم.</p></header>
 <main>
 <div class="card"><div class="scroll" id="pr"></div></div>
@@ -43,6 +43,7 @@ label.t{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px}
 <label class="t"><input type="checkbox" id="elim"> وضع الإقصاء: اللي يطلع يتشال من العجلة (لتوزيع الأدوار)</label>
 <label class="t"><input type="checkbox" id="snd" checked> صوت</label>
 </div>
+<div class="card"><b>شكل العجلة</b><div class="scroll" id="thm" style="margin-top:8px"></div></div>
 <div class="card"><div class="row"><input id="ni" placeholder="ضيف اختيار (مثلاً: كشري)" maxlength="24"><button class="b" onclick="addO()">أضف</button></div>
 <div class="opts" id="ol"></div><div class="mut" style="margin-top:8px" id="hint"></div></div>
 <div class="card"><b>آخر النتايج</b><div class="hist" id="hist"><span class="mut">لسه ما دورتش</span></div></div>
@@ -58,12 +59,15 @@ const PRE={
 '☕ نشرب إيه':['شاي','قهوة تركي','نسكافيه','عصير مانجا','سحلب','ينسون'],
 '🎲 نلعب إيه':['كوتشينة','دومينو','طاولة','بلايستيشن','تخمين','ورقة وقلم'],
 '🧹 مين يعمل المهمة':['غسيل الأطباق','رمي الزبالة','ترتيب الأوضة','شراء الطلبات']};
-const COL=['#f97316','#ef4444','#eab308','#22c55e','#06b6d4','#6366f1','#d946ef','#ec4899','#14b8a6','#84cc16'];
+const THEMES={'🔥 دافي':['#f97316','#ef4444','#eab308','#22c55e','#06b6d4','#6366f1','#d946ef','#ec4899','#14b8a6','#84cc16'],'🌊 بحر':['#0ea5e9','#0369a1','#14b8a6','#0f766e','#38bdf8','#1d4ed8','#06b6d4','#0891b2','#2563eb','#115e59'],'🌸 باستيل':['#f472b6','#c084fc','#818cf8','#38bdf8','#34d399','#fbbf24','#fb7185','#a78bfa','#2dd4bf','#f59e0b'],'🌙 ليلي':['#1e293b','#7c3aed','#0f766e','#be123c','#b45309','#1d4ed8','#475569','#9333ea','#047857','#c2410c']};
+let COL=THEMES['🔥 دافي'];
 let O=[],ang=0,spinning=false,H=[],cur='';
 const names=Object.keys(PRE);
 $('pr').innerHTML=names.map(n=>`<button class="pc" onclick="loadP('${n}')">${n}</button>`).join('');
+$('thm').innerHTML=Object.keys(THEMES).map(n=>`<button class="pc" onclick="setTh('${n}')">${n}</button>`).join('');
+function setTh(n){COL=THEMES[n];document.querySelectorAll('#thm .pc').forEach(b=>b.classList.toggle('on',b.textContent===n));try{localStorage.setItem('dwt',n)}catch(e){}upd()}
 function loadP(n){cur=n;O=PRE[n].slice();if(!O.length){O=['أنا','إنت','هو','هي']}
- document.querySelectorAll('.pc').forEach(b=>b.classList.toggle('on',b.textContent===n));$('res').textContent='';upd()}
+ document.querySelectorAll('#pr .pc').forEach(b=>b.classList.toggle('on',b.textContent===n));$('res').textContent='';upd()}
 function addO(){const v=$('ni').value.trim();if(!v||O.length>=24)return;O.push(v);$('ni').value='';upd();$('ni').focus()}
 function delO(i){O.splice(i,1);upd()}
 $('ni').addEventListener('keydown',e=>e.key==='Enter'&&addO());
@@ -73,7 +77,7 @@ function upd(){$('ol').innerHTML=O.map((o,i)=>`<span class="op"><i class="sw" st
 function draw(){const c=$('w'),g=c.getContext('2d'),R=440,n=O.length;g.clearRect(0,0,880,880);g.save();g.translate(R,R);g.rotate(ang);
  if(!n){g.fillStyle='#e7e5e4';g.beginPath();g.arc(0,0,R-4,0,7);g.fill()}
  for(let i=0;i<n;i++){const a0=i*2*Math.PI/n,a1=(i+1)*2*Math.PI/n;g.fillStyle=COL[i%COL.length];g.beginPath();g.moveTo(0,0);g.arc(0,0,R-4,a0,a1);g.closePath();g.fill();g.strokeStyle='#fff';g.lineWidth=4;g.stroke();
-  g.save();g.rotate((a0+a1)/2);g.fillStyle='#fff';g.textAlign='right';g.direction='rtl';const fs=n>14?30:n>8?38:46;g.font='bold '+fs+'px sans-serif';g.shadowColor='#0005';g.shadowBlur=4;let t=O[i];while(g.measureText(t).width>R-140&&t.length>3)t=t.slice(0,-2);if(t!==O[i])t+='…';g.fillText(t,R-30,fs/3);g.restore()}
+  g.save();const mid=(a0+a1)/2;g.rotate(mid);const fl=Math.cos(mid+ang)<0;if(fl)g.rotate(Math.PI);g.fillStyle='#fff';g.textAlign=fl?'left':'right';g.direction='rtl';const fs=n>14?30:n>8?38:46;g.font='bold '+fs+'px sans-serif';g.shadowColor='#0005';g.shadowBlur=4;let t=O[i];while(g.measureText(t).width>R-140&&t.length>3)t=t.slice(0,-2);if(t!==O[i])t+='…';g.fillText(t,fl?-(R-30):R-30,fs/3);g.restore()}
  g.restore();g.strokeStyle='#fff';g.lineWidth=14;g.beginPath();g.arc(R,R,R-4,0,7);g.stroke()}
 let ac;function tick(f=900,d=.04,v=.05){if(!$('snd').checked)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),gn=ac.createGain();o.frequency.value=f;o.type='square';gn.gain.value=v;o.connect(gn);gn.connect(ac.destination);o.start();gn.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
 function spin(){if(spinning||O.length<2)return;spinning=true;$('res').textContent='...';
@@ -87,13 +91,15 @@ function spin(){if(spinning||O.length<2)return;spinning=true;$('res').textConten
   const idx=Math.floor((((-Math.PI/2-ang)%(2*Math.PI))+2*Math.PI)%(2*Math.PI)/seg);if(idx!==lastSeg){lastSeg=idx;tick(700+Math.random()*300)}
   if(p<1)requestAnimationFrame(f);else done()}
  requestAnimationFrame(f)}
+$('w').addEventListener('click',spin);
+function big(w){const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:10;background:#000a;display:flex;align-items:center;justify-content:center;animation:pop .35s';d.innerHTML='<div style="background:#fff;border-radius:24px;padding:28px 34px;text-align:center;max-width:88vw"><div style="font-size:18px;color:#78716c">العجلة حسمت</div><div style="font-size:44px;font-weight:900;color:#be123c;margin:10px 0;word-break:break-word">'+esc(w)+'</div><button class="b" style="font-size:18px">تمام 👌</button></div>';d.onclick=()=>d.remove();document.body.appendChild(d);setTimeout(()=>d.remove(),4500);try{navigator.vibrate&&navigator.vibrate([60,40,120])}catch(e){}}
 function done(){spinning=false;const n=O.length,seg=2*Math.PI/n;const idx=Math.floor((((-Math.PI/2-ang)%(2*Math.PI))+2*Math.PI)%(2*Math.PI)/seg)%n;const w=O[idx];
- $('res').textContent='🎉 '+w;H.unshift(w);H=H.slice(0,8);$('hist').innerHTML=H.map(x=>esc(x)).join(' ← ');tick(1200,.25,.08);setTimeout(()=>tick(1600,.3,.08),160);confetti();
+ $('res').textContent='🎉 '+w;H.unshift(w);H=H.slice(0,8);$('hist').innerHTML=H.map(x=>esc(x)).join(' ← ');tick(1200,.25,.08);setTimeout(()=>tick(1600,.3,.08),160);confetti();big(w);
  if($('elim').checked&&O.length>2){setTimeout(()=>{O.splice(idx,1);upd()},900)}}
 function confetti(){const c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9;width:100%;height:100%';c.width=innerWidth;c.height=innerHeight;document.body.appendChild(c);const g=c.getContext('2d');const P=[];for(let i=0;i<120;i++)P.push({x:innerWidth/2,y:innerHeight/2,vx:(Math.random()-.5)*16,vy:-Math.random()*16-4,c:COL[i%10],r:Math.random()*6,s:4+Math.random()*6});let t=0;(function f(){g.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.45;p.r+=.2;g.save();g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);g.restore()});if(++t<100)requestAnimationFrame(f);else c.remove()})()}
 function link(){return location.origin+location.pathname+'#'+btoa(unescape(encodeURIComponent(JSON.stringify({O,cur}))))}
 function shareRes(){const r=$('res').textContent.replace('🎉 ','');if(!r||r==='...')return alert('دوّر العجلة الأول');window.open('https://wa.me/?text='+encodeURIComponent('🎡 العجلة حسمت'+(cur?' ('+cur+')':'')+': *'+r+'*\n\nدوّر عجلتك: '+location.origin+location.pathname),'_blank')}
 function shareWheel(){if(O.length<2)return alert('ضيف اختيارين');window.open('https://wa.me/?text='+encodeURIComponent('🎡 دوّر العجلة دي معايا'+(cur?' ('+cur+')':'')+':\n'+link()),'_blank')}
 try{const h=location.hash.slice(1);if(h){const d=JSON.parse(decodeURIComponent(escape(atob(h))));O=d.O;cur=d.cur||''}else{const l=JSON.parse(localStorage.getItem('dw')||'null');if(l&&l.O&&l.O.length){O=l.O;cur=l.cur||''}else loadP(names[0])}}catch(e){loadP(names[0])}
-if(!O.length)loadP(names[0]);document.querySelectorAll('.pc').forEach(b=>b.classList.toggle('on',b.textContent===cur));upd();
+if(!O.length)loadP(names[0]);document.querySelectorAll('#pr .pc').forEach(b=>b.classList.toggle('on',b.textContent===cur));try{const t=localStorage.getItem('dwt');setTh(t&&THEMES[t]?t:'🔥 دافي')}catch(e){setTh('🔥 دافي')}
 </script></body></html>
