@@ -40,6 +40,7 @@ label.t{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px}
 <div class="wheelbox"><div class="ptr"></div><canvas id="w" width="880" height="880"></canvas><button class="hub" id="go" onclick="spin()">دوّر</button></div>
 <div class="res" id="res"></div>
 <div class="acts"><button class="b wa" onclick="shareRes()">ابعت النتيجة 💬</button><button class="b g" onclick="shareWheel()">ابعت العجلة 🎡</button></div>
+<div class="acts"><button class="b g" onclick="shareImg()">صورة النتيجة 🖼️</button></div>
 <label class="t"><input type="checkbox" id="elim"> وضع الإقصاء: اللي يطلع يتشال من العجلة (لتوزيع الأدوار)</label>
 <label class="t"><input type="checkbox" id="snd" checked> صوت</label>
 <label class="t">السرعة: <select id="spd" style="font:inherit;padding:4px"><option value="1">عادي</option><option value="0.55">سريع</option><option value="1.6">بطيء ومشوّق</option></select></label>
@@ -107,6 +108,13 @@ function teams(){if(O.length<2)return alert('ضيف أسماء الأول');cons
 function shareT(){if(!TM.length)return alert('اضغط قسّم الأول');window.open('https://wa.me/?text='+encodeURIComponent('👥 الفرق:\n'+TM.map((t,i)=>'*الفريق '+(i+1)+'*: '+t.join('، ')).join('\n')+'\n\nدوّرها: '+location.origin+location.pathname),'_blank')}
 function link(){return location.origin+location.pathname+'#'+btoa(unescape(encodeURIComponent(JSON.stringify({O,cur}))))}
 function shareRes(){const r=$('res').textContent.replace('🎉 ','');if(!r||r==='...')return alert('دوّر العجلة الأول');window.open('https://wa.me/?text='+encodeURIComponent('🎡 العجلة حسمت'+(cur?' ('+cur+')':'')+': *'+r+'*\n\nدوّر عجلتك: '+location.origin+location.pathname),'_blank')}
+function shareImg(){const r=$('res').textContent.replace('🎉 ','');if(!r||r==='...')return alert('دوّر العجلة الأول');
+ const c=$('img'),g=c.getContext('2d');c.width=1080;c.height=1350;let gr=g.createLinearGradient(0,0,1080,1350);gr.addColorStop(0,'#f97316');gr.addColorStop(1,'#e11d48');g.fillStyle=gr;g.fillRect(0,0,1080,1350);
+ g.direction='rtl';g.textAlign='center';g.fillStyle='#fff';g.font='bold 70px sans-serif';g.fillText('🎡 العجلة حسمت',540,120);if(cur){g.font='40px sans-serif';g.globalAlpha=.85;g.fillText(cur,540,185);g.globalAlpha=1}
+ g.save();g.beginPath();g.arc(540,560,330,0,7);g.clip();g.drawImage($('w'),210,230,660,660);g.restore();g.strokeStyle='#fff';g.lineWidth=14;g.beginPath();g.arc(540,560,330,0,7);g.stroke();
+ g.fillStyle='#fff';g.fillRect(0,960,1080,260);g.fillStyle='#be123c';let fs=110;g.font='900 '+fs+'px sans-serif';while(g.measureText(r).width>940&&fs>40){fs-=8;g.font='900 '+fs+'px sans-serif'}g.fillText(r,540,1110);
+ g.fillStyle='#fff';g.font='32px sans-serif';g.fillText('اتحسمت بـ دوّرها 🎡',540,1295);
+ c.toBlob(async b=>{const f=new File([b],'dawwarha.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});return}catch(e){}}const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='dawwarha.png';a.click()})}
 function shareWheel(){if(O.length<2)return alert('ضيف اختيارين');window.open('https://wa.me/?text='+encodeURIComponent('🎡 دوّر العجلة دي معايا'+(cur?' ('+cur+')':'')+':\n'+link()),'_blank')}
 try{const h=location.hash.slice(1);if(h){const d=JSON.parse(decodeURIComponent(escape(atob(h))));O=d.O;cur=d.cur||''}else{const l=JSON.parse(localStorage.getItem('dw')||'null');if(l&&l.O&&l.O.length){O=l.O;cur=l.cur||''}else loadP(names[0])}}catch(e){loadP(names[0])}
 if(!O.length)loadP(names[0]);document.querySelectorAll('#pr .pc').forEach(b=>b.classList.toggle('on',b.textContent===cur));try{const t=localStorage.getItem('dwt');setTh(t&&THEMES[t]?t:'🔥 دافي')}catch(e){setTh('🔥 دافي')}
